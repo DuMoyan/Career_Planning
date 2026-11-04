@@ -8,6 +8,12 @@ import AssessmentRunnerPage from '../features/assessment/AssessmentRunnerPage.vu
 import DashboardPage from '../features/profile/DashboardPage.vue'
 import PrivacyPage from '../features/profile/PrivacyPage.vue'
 import ProfilePage from '../features/profile/ProfilePage.vue'
+import CompetencyPage from '../features/competency/CompetencyPage.vue'
+import TargetExplorerPage from '../features/targets/TargetExplorerPage.vue'
+import PlanningPage from '../features/planning/PlanningPage.vue'
+import PlanHistoryPage from '../features/planning/PlanHistoryPage.vue'
+import TaskBoardPage from '../features/tasks/TaskBoardPage.vue'
+import WeeklyReportsPage from '../features/reports/WeeklyReportsPage.vue'
 import AdminLayout from '../layouts/AdminLayout.vue'
 import MentorLayout from '../layouts/MentorLayout.vue'
 import StudentLayout from '../layouts/StudentLayout.vue'
@@ -32,6 +38,12 @@ export function createCareerRouter(history: RouterHistory = createWebHistory(), 
           { path: 'assessments', component: AssessmentCenterPage },
           { path: 'assessments/:scaleId', component: AssessmentRunnerPage, props: true },
           { path: 'assessment-reports/:recordId', component: AssessmentReportPage, props: true },
+          { path: 'competencies', component: CompetencyPage },
+          { path: 'targets', component: TargetExplorerPage },
+          { path: 'planning', component: PlanningPage },
+          { path: 'plans/history', component: PlanHistoryPage },
+          { path: 'tasks', component: TaskBoardPage },
+          { path: 'reports', component: WeeklyReportsPage },
         ],
       },
       { path: '/mentor', component: MentorLayout, meta: { roles: ['mentor'] }, children: [{ path: '', component: placeholder('授权学生') }] },

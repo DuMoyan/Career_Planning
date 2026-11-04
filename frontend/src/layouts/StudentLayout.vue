@@ -19,6 +19,11 @@ async function logout() {
       <RouterLink to="/profile">个人档案</RouterLink>
       <RouterLink to="/privacy">隐私授权</RouterLink>
       <RouterLink to="/assessments">职业测评</RouterLink>
+      <RouterLink to="/competencies">能力画像</RouterLink>
+      <RouterLink to="/targets">职业目标</RouterLink>
+      <RouterLink to="/planning">智能规划</RouterLink>
+      <RouterLink to="/tasks">成长任务</RouterLink>
+      <RouterLink to="/reports">成长周报</RouterLink>
       <button type="button" @click="logout">退出登录</button>
     </aside>
     <main><RouterView /></main>
