@@ -1,0 +1,24 @@
+{
+  "scales": [
+    {
+      "code": "demo-riasec",
+      "name": "职业兴趣探索",
+      "kind": "interest",
+      "version": "1.0",
+      "dimensions": ["R", "I", "A", "S", "E", "C"],
+      "items_per_dimension": 6,
+      "choice_range": [1, 5],
+      "licensed_for": "教学演示"
+    },
+    {
+      "code": "demo-work-values",
+      "name": "职业价值观探索",
+      "kind": "work_values",
+      "version": "1.0",
+      "dimensions": ["成长成就", "自主性", "稳定保障", "经济回报", "社会贡献", "人际协作", "工作生活平衡"],
+      "items_per_dimension": 3,
+      "choice_range": [1, 5],
+      "licensed_for": "教学演示"
+    }
+  ]
+}
