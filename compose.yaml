@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment: { POSTGRES_DB: career, POSTGRES_USER: career, POSTGRES_PASSWORD: career }
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck: { test: [CMD-SHELL, "pg_isready -U career"], interval: 5s, timeout: 3s, retries: 20 }
+  redis:
+    image: redis:7-alpine
+    healthcheck: { test: [CMD, redis-cli, ping], interval: 5s, timeout: 3s, retries: 20 }
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://career:career@postgres/career
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:-change-this-demo-secret-at-least-32-chars}
+    volumes: [uploads:/app/uploads]
+    depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy } }
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports: ["8080:80"]
+    depends_on: [backend]
+volumes: { postgres-data: {}, uploads: {} }
