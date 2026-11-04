@@ -27,7 +27,9 @@
 
 ## 容器与冒烟
 
-已提供 PostgreSQL、Redis、FastAPI、Nginx 四服务 Compose、健康检查、迁移前置、持久卷、SPA 回退、SSE 禁缓冲和完整学生冒烟脚本。由于当前主机没有 Docker，未执行 `docker compose build/up/down -v` 和真实 HTTP 冒烟；此项不伪报通过，需在安装 Docker 的环境按 `docs/deployment.md` 复验。
+已提供 PostgreSQL、Redis、FastAPI、Nginx 四服务 Compose、健康检查、迁移前置、持久卷、SPA 回退、SSE 禁缓冲和完整学生冒烟脚本。
+
+本地 Uvicorn 真实 HTTP 冒烟已通过全部 8 步：学生登录、读取档案、读取两套量表、比较两个岗位、规则模式生成规划、激活计划、任务打卡、获取周报。当前主机尚未成功安装 Docker，因此未执行 `docker compose build/up/down -v`；此项不伪报通过，需在 Docker 可用后按 `docs/deployment.md` 复验容器构建与服务网络。
 
 ## 已知限制
 
