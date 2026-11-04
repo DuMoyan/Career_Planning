@@ -12,6 +12,7 @@ from app.models.assessment import (  # noqa: F401
     AssessmentRecordModel,
     AssessmentScaleModel,
 )
+from app.models.ai_run import AIPlanningRun  # noqa: F401
 from app.models.base import Base
 from app.models.consent import UserConsent  # noqa: F401
 from app.models.competency import CompetencyEvidence, CompetencyProfile  # noqa: F401

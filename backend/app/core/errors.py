@@ -44,3 +44,8 @@ class AccountLockedError(DomainError):
 class PayloadTooLargeError(DomainError):
     status_code = 413
     code = "PAYLOAD_TOO_LARGE"
+
+
+class ConflictError(DomainError):
+    status_code = 409
+    code = "CONFLICT"

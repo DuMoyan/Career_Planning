@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.v1.ai_runs import router as ai_runs_router
 from app.api.v1.assessments import router as assessments_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.competencies import router as competencies_router
@@ -18,3 +19,4 @@ api_router.include_router(assessments_router)
 api_router.include_router(resumes_router)
 api_router.include_router(competencies_router)
 api_router.include_router(targets_router)
+api_router.include_router(ai_runs_router)
