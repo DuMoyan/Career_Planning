@@ -23,4 +23,3 @@ class Settings(BaseSettings):
     model_api_key: str | None = None
     model_name: str | None = None
     model_timeout_seconds: int = Field(default=20, gt=0)
-

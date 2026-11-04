@@ -28,9 +28,7 @@ def make_scale() -> ScaleDefinition:
     ("choice", "expected"),
     [(1, 0.0), (3, 50.0), (5, 100.0)],
 )
-def test_likert_choice_normalizes_to_zero_to_one_hundred(
-    choice: int, expected: float
-) -> None:
+def test_likert_choice_normalizes_to_zero_to_one_hundred(choice: int, expected: float) -> None:
     scale = make_scale()
     answers = {item.id: choice for item in scale.items}
 

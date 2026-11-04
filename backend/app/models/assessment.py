@@ -57,4 +57,3 @@ class AssessmentProgressModel(Base):
         Uuid, ForeignKey("assessment_scales.id", ondelete="CASCADE"), primary_key=True
     )
     answers: Mapped[dict] = mapped_column(JSON)
-

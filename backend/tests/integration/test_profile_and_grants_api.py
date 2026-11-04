@@ -101,16 +101,12 @@ def test_grant_defaults_to_90_days_writes_audit_and_revoke_invalidates_cache() -
 
     assert created.status_code == 201
     assert remaining_days in {89, 90}
-    assert asyncio.run(
-        grants.can_read(mentor_id, student_id, GrantScope.profile_summary)
-    ) is True
+    assert asyncio.run(grants.can_read(mentor_id, student_id, GrantScope.profile_summary)) is True
 
     revoked = client.delete(f"/api/v1/consents/mentor-grants/{grant_id}")
 
     assert revoked.status_code == 204
-    assert asyncio.run(
-        grants.can_read(mentor_id, student_id, GrantScope.profile_summary)
-    ) is False
+    assert asyncio.run(grants.can_read(mentor_id, student_id, GrantScope.profile_summary)) is False
     assert [event.event_type for event in audits.events][-2:] == [
         "mentor_grant_created",
         "mentor_grant_revoked",

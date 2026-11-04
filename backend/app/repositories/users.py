@@ -62,9 +62,7 @@ class InMemoryUserRepository:
     async def save_refresh_session(self, session: RefreshSession) -> None:
         self._refresh_sessions[session.digest] = session
 
-    async def consume_refresh_session(
-        self, digest: str, now: datetime
-    ) -> RefreshSession | None:
+    async def consume_refresh_session(self, digest: str, now: datetime) -> RefreshSession | None:
         session = self._refresh_sessions.get(digest)
         if session is None or session.revoked or session.expires_at <= now:
             return None
@@ -111,9 +109,7 @@ class SqlAlchemyUserRepository:
         )
         await self.session.commit()
 
-    async def consume_refresh_session(
-        self, digest: str, now: datetime
-    ) -> RefreshSession | None:
+    async def consume_refresh_session(self, digest: str, now: datetime) -> RefreshSession | None:
         model = await self.session.get(RefreshToken, digest)
         if model is None or model.revoked or model.expires_at <= now:
             return None
@@ -145,4 +141,3 @@ def _to_record(model: User | None) -> UserRecord | None:
         failed_login_count=model.failed_login_count,
         locked_until=model.locked_until,
     )
-

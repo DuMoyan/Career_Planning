@@ -23,4 +23,3 @@ class ReportResponse(RecordResponse):
     scoring_version: str
     interpretation_version: str
     disclaimer: str
-

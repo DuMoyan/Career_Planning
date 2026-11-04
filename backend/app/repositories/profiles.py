@@ -64,4 +64,3 @@ class SqlAlchemyProfileRepository:
         model.available_hours = profile.available_hours
         model.constraints = profile.constraints
         await self.session.commit()
-

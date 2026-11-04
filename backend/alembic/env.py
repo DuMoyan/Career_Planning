@@ -14,9 +14,11 @@ from app.models.assessment import (  # noqa: F401
 )
 from app.models.base import Base
 from app.models.consent import UserConsent  # noqa: F401
+from app.models.competency import CompetencyEvidence, CompetencyProfile  # noqa: F401
 from app.models.mentor import MentorGrantModel  # noqa: F401
 from app.models.profile import StudentProfile  # noqa: F401
 from app.models.preference import CareerPreference  # noqa: F401
+from app.models.resume import ResumeFile  # noqa: F401
 from app.models.user import RefreshToken, User  # noqa: F401
 
 config = context.config

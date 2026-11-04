@@ -17,4 +17,3 @@ class TokenPair(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
     role: Role
-

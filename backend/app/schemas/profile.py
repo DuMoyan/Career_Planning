@@ -15,4 +15,3 @@ class ProfileUpdate(BaseModel):
 
 class ProfileResponse(ProfileUpdate):
     student_id: UUID
-

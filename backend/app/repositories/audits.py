@@ -50,4 +50,3 @@ class SqlAlchemyAuditRepository:
             )
         )
         await self.session.commit()
-

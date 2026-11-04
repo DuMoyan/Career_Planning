@@ -63,9 +63,11 @@ def test_invalid_credentials_and_disabled_account_use_same_public_message() -> N
     )
 
     assert wrong.status_code == disabled.status_code == 401
-    assert wrong.json() == disabled.json() == {
-        "error": {"code": "INVALID_CREDENTIALS", "message": "账号或密码错误"}
-    }
+    assert (
+        wrong.json()
+        == disabled.json()
+        == {"error": {"code": "INVALID_CREDENTIALS", "message": "账号或密码错误"}}
+    )
 
 
 def test_five_failed_logins_temporarily_lock_account() -> None:
@@ -94,12 +96,8 @@ def test_refresh_rotates_token_and_logout_revokes_latest_token() -> None:
         json={"identifier": "20260001", "password": "Career!2026"},
     ).json()
 
-    rotated = client.post(
-        "/api/v1/auth/refresh", json={"refresh_token": login["refresh_token"]}
-    )
-    old_again = client.post(
-        "/api/v1/auth/refresh", json={"refresh_token": login["refresh_token"]}
-    )
+    rotated = client.post("/api/v1/auth/refresh", json={"refresh_token": login["refresh_token"]})
+    old_again = client.post("/api/v1/auth/refresh", json={"refresh_token": login["refresh_token"]})
     logout = client.post(
         "/api/v1/auth/logout", json={"refresh_token": rotated.json()["refresh_token"]}
     )

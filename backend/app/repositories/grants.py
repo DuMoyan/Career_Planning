@@ -130,4 +130,3 @@ def _grant_from_model(model: MentorGrantModel | None) -> MentorGrant | None:
         expires_at=model.expires_at,
         revoked_at=model.revoked_at,
     )
-

@@ -19,4 +19,3 @@ class GrantResponse(BaseModel):
     scopes: list[GrantScope]
     expires_at: datetime
     revoked_at: datetime | None
-

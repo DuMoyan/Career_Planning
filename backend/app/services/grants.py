@@ -66,9 +66,7 @@ class GrantService:
             )
         )
 
-    async def can_read(
-        self, mentor_id: UUID, student_id: UUID, scope: GrantScope
-    ) -> bool:
+    async def can_read(self, mentor_id: UUID, student_id: UUID, scope: GrantScope) -> bool:
         cached = await self.cache.get(mentor_id, student_id, scope)
         if cached is not None:
             return cached
@@ -76,4 +74,3 @@ class GrantService:
         allowed = GrantPolicy.can_read(grant, scope, datetime.now(UTC))
         await self.cache.set(mentor_id, student_id, scope, allowed)
         return allowed
-

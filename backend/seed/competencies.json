@@ -1,0 +1,14 @@
+{
+  "competencies": [
+    {"code": "professional_knowledge", "name": "专业知识"},
+    {"code": "programming", "name": "编程开发"},
+    {"code": "data_analysis", "name": "数据分析"},
+    {"code": "research_analysis", "name": "研究分析"},
+    {"code": "product_requirements", "name": "产品需求"},
+    {"code": "communication", "name": "沟通表达"},
+    {"code": "teamwork", "name": "团队协作"},
+    {"code": "project_execution", "name": "项目执行"},
+    {"code": "foreign_language", "name": "外语能力"}
+  ],
+  "levels": {"0": "未知", "1": "了解", "2": "可在指导下完成", "3": "可独立完成", "4": "可指导他人或处理复杂任务"}
+}

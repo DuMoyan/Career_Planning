@@ -19,4 +19,3 @@ class StudentProfile(Base):
     gpa: Mapped[float | None] = mapped_column(Float, nullable=True)
     available_hours: Mapped[float] = mapped_column(Float, default=0)
     constraints: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-

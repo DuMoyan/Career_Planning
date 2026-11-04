@@ -40,3 +40,7 @@ class AccountLockedError(DomainError):
     def __init__(self) -> None:
         super().__init__("账号已临时锁定，请稍后重试")
 
+
+class PayloadTooLargeError(DomainError):
+    status_code = 413
+    code = "PAYLOAD_TOO_LARGE"

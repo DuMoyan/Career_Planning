@@ -20,4 +20,3 @@ class AccessContext:
 def ensure_roles(context: AccessContext, allowed_roles: set[Role]) -> None:
     if context.role not in allowed_roles:
         raise ForbiddenError("当前账号无权执行此操作")
-

@@ -53,9 +53,7 @@ class InMemoryAssessmentRepository:
     async def get_progress(self, student_id: UUID, scale_id: UUID) -> dict[UUID, int]:
         return dict(self.progress.get((student_id, scale_id), {}))
 
-    async def get_by_idempotency(
-        self, student_id: UUID, key: str
-    ) -> AssessmentRecord | None:
+    async def get_by_idempotency(self, student_id: UUID, key: str) -> AssessmentRecord | None:
         record_id = self.idempotency.get((student_id, key))
         return self.records.get(record_id) if record_id else None
 
@@ -65,4 +63,3 @@ class InMemoryAssessmentRepository:
 
     async def get_record(self, record_id: UUID) -> AssessmentRecord | None:
         return self.records.get(record_id)
-

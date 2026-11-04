@@ -45,4 +45,3 @@ async def get_student_profile(
     return ProfileResponse.model_validate(
         await _service(request).get(context, student_id), from_attributes=True
     )
-

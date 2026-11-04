@@ -20,4 +20,3 @@ async def current_access_context(
         credentials.credentials,
         secret=request.app.state.settings.jwt_secret,
     )
-

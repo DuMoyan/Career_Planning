@@ -95,4 +95,3 @@ class AuthService:
 
 def _digest(token: str) -> str:
     return sha256(token.encode("utf-8")).hexdigest()
-

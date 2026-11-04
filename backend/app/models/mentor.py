@@ -16,4 +16,3 @@ class MentorGrantModel(Base):
     scopes: Mapped[list[str]] = mapped_column(JSON)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-

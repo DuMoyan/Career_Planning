@@ -24,4 +24,3 @@ class ProfileService:
         profile = StudentProfileRecord(student_id=context.user_id, **payload.model_dump())
         await self.repository.save(profile)
         return profile
-

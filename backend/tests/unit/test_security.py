@@ -36,4 +36,3 @@ def test_expired_access_token_is_rejected() -> None:
 
     with pytest.raises(TokenExpiredError):
         decode_access_token(token, secret="s" * 32)
-

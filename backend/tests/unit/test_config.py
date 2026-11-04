@@ -25,4 +25,3 @@ def test_settings_use_required_mvp_defaults() -> None:
 
     assert settings.timezone == "Asia/Shanghai"
     assert settings.upload_max_bytes == 10_485_760
-
