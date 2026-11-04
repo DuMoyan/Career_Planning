@@ -1,0 +1,10 @@
+{
+  "notice": "仅用于教学演示，不代表实时招聘市场结论",
+  "source": "教学演示岗位数据",
+  "targets": [
+    {"code": "software-engineer", "name": "软件开发工程师", "category": "技术", "verified_at": "2026-11-03"},
+    {"code": "data-analyst", "name": "数据分析师", "category": "数据", "verified_at": "2026-11-03"},
+    {"code": "product-manager", "name": "产品经理", "category": "产品", "verified_at": "2025-12-01"},
+    {"code": "algorithm-engineer", "name": "算法工程师", "category": "技术", "verified_at": "2026-11-03"}
+  ]
+}

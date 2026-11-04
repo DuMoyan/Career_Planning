@@ -7,6 +7,7 @@ from app.api.v1.consents import router as consents_router
 from app.api.v1.health import router as health_router
 from app.api.v1.profiles import router as profiles_router
 from app.api.v1.resumes import router as resumes_router
+from app.api.v1.targets import router as targets_router
 
 api_router = APIRouter()
 api_router.include_router(health_router)
@@ -16,3 +17,4 @@ api_router.include_router(consents_router)
 api_router.include_router(assessments_router)
 api_router.include_router(resumes_router)
 api_router.include_router(competencies_router)
+api_router.include_router(targets_router)
