@@ -2,6 +2,16 @@
 
 from app.models.ai_run import AIPlanningRun
 from app.models.goal import CareerGoal
+from app.models.plan import CareerPlan, PlanVersion
 from app.models.target import CareerTarget, CareerTargetRequirement
+from app.models.task import GrowthTask
 
-__all__ = ["AIPlanningRun", "CareerGoal", "CareerTarget", "CareerTargetRequirement"]
+__all__ = [
+    "AIPlanningRun",
+    "CareerGoal",
+    "CareerPlan",
+    "CareerTarget",
+    "CareerTargetRequirement",
+    "GrowthTask",
+    "PlanVersion",
+]

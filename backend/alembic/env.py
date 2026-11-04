@@ -18,10 +18,12 @@ from app.models.consent import UserConsent  # noqa: F401
 from app.models.competency import CompetencyEvidence, CompetencyProfile  # noqa: F401
 from app.models.goal import CareerGoal  # noqa: F401
 from app.models.mentor import MentorGrantModel  # noqa: F401
+from app.models.plan import CareerPlan, PlanVersion  # noqa: F401
 from app.models.profile import StudentProfile  # noqa: F401
 from app.models.preference import CareerPreference  # noqa: F401
 from app.models.resume import ResumeFile  # noqa: F401
 from app.models.target import CareerTarget, CareerTargetRequirement  # noqa: F401
+from app.models.task import GrowthTask  # noqa: F401
 from app.models.user import RefreshToken, User  # noqa: F401
 
 config = context.config
