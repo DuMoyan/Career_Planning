@@ -10,14 +10,17 @@ requirements_full.md
 venv/
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
 .coverage
 htmlcov/
+.tmp/
 
 # 前端依赖与构建产物
 node_modules/
 dist/
 coverage/
+*.tsbuildinfo
 
 # IDE 与操作系统文件
 .idea/

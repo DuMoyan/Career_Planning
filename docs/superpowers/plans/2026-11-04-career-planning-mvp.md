@@ -173,6 +173,7 @@ git commit -m "构建：初始化职业生涯规划MVP工程"
 
 **Files:**
 - Create: `backend/app/core/database.py`
+- Create: `backend/app/core/redis.py`
 - Create: `backend/app/core/security.py`
 - Create: `backend/app/core/errors.py`
 - Create: `backend/app/domain/access.py`
@@ -572,6 +573,8 @@ git commit -m "功能：新增可降级的规划智能体工作流"
 **Files:**
 - Create: `backend/app/domain/plans.py`
 - Create: `backend/app/models/plan.py`
+- Create: `backend/app/models/task.py`
+- Create: `backend/app/repositories/tasks.py`
 - Create: `backend/app/repositories/plans.py`
 - Create: `backend/app/services/plans.py`
 - Create: `backend/app/api/v1/plans.py`
@@ -630,9 +633,9 @@ git commit -m "功能：新增计划激活与版本化重规划"
 
 **Files:**
 - Create: `backend/app/domain/tasks.py`
-- Create: `backend/app/models/task.py`
+- Modify: `backend/app/models/task.py`
 - Create: `backend/app/schemas/task.py`
-- Create: `backend/app/repositories/tasks.py`
+- Modify: `backend/app/repositories/tasks.py`
 - Create: `backend/app/services/tasks.py`
 - Create: `backend/app/api/v1/tasks.py`
 - Create: `backend/alembic/versions/0008_tasks.py`
