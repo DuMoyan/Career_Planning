@@ -18,6 +18,7 @@ from app.models.consent import UserConsent  # noqa: F401
 from app.models.competency import CompetencyEvidence, CompetencyProfile  # noqa: F401
 from app.models.goal import CareerGoal  # noqa: F401
 from app.models.mentor import MentorGrantModel  # noqa: F401
+from app.models.mentor_comment import MentorPlanComment  # noqa: F401
 from app.models.plan import CareerPlan, PlanVersion  # noqa: F401
 from app.models.profile import StudentProfile  # noqa: F401
 from app.models.report import WeeklyReport  # noqa: F401

@@ -1,11 +1,13 @@
 from fastapi import APIRouter
 
+from app.api.v1.admin import router as admin_router
 from app.api.v1.ai_runs import router as ai_runs_router
 from app.api.v1.assessments import router as assessments_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.competencies import router as competencies_router
 from app.api.v1.consents import router as consents_router
 from app.api.v1.health import router as health_router
+from app.api.v1.mentor import router as mentor_router
 from app.api.v1.plans import router as plans_router
 from app.api.v1.profiles import router as profiles_router
 from app.api.v1.reports import router as reports_router
@@ -26,3 +28,5 @@ api_router.include_router(ai_runs_router)
 api_router.include_router(plans_router)
 api_router.include_router(tasks_router)
 api_router.include_router(reports_router)
+api_router.include_router(mentor_router)
+api_router.include_router(admin_router)

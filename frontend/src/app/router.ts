@@ -14,6 +14,8 @@ import PlanningPage from '../features/planning/PlanningPage.vue'
 import PlanHistoryPage from '../features/planning/PlanHistoryPage.vue'
 import TaskBoardPage from '../features/tasks/TaskBoardPage.vue'
 import WeeklyReportsPage from '../features/reports/WeeklyReportsPage.vue'
+import MentorStudentsPage from '../features/mentor/MentorStudentsPage.vue'
+import AdminOverviewPage from '../features/admin/AdminOverviewPage.vue'
 import AdminLayout from '../layouts/AdminLayout.vue'
 import MentorLayout from '../layouts/MentorLayout.vue'
 import StudentLayout from '../layouts/StudentLayout.vue'
@@ -46,8 +48,8 @@ export function createCareerRouter(history: RouterHistory = createWebHistory(), 
           { path: 'reports', component: WeeklyReportsPage },
         ],
       },
-      { path: '/mentor', component: MentorLayout, meta: { roles: ['mentor'] }, children: [{ path: '', component: placeholder('授权学生') }] },
-      { path: '/admin', component: AdminLayout, meta: { roles: ['admin'] }, children: [{ path: '', name: 'admin', component: placeholder('系统状态') }] },
+      { path: '/mentor', component: MentorLayout, meta: { roles: ['mentor'] }, children: [{ path: '', component: MentorStudentsPage }] },
+      { path: '/admin', component: AdminLayout, meta: { roles: ['admin'] }, children: [{ path: '', name: 'admin', component: AdminOverviewPage }] },
     ],
   })
   router.beforeEach((to) => {

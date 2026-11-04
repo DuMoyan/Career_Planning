@@ -2,6 +2,7 @@
 
 from app.models.ai_run import AIPlanningRun
 from app.models.goal import CareerGoal
+from app.models.mentor_comment import MentorPlanComment
 from app.models.plan import CareerPlan, PlanVersion
 from app.models.report import WeeklyReport
 from app.models.target import CareerTarget, CareerTargetRequirement
@@ -14,6 +15,7 @@ __all__ = [
     "CareerTarget",
     "CareerTargetRequirement",
     "GrowthTask",
+    "MentorPlanComment",
     "PlanVersion",
     "TaskCheckIn",
     "WeeklyReport",
