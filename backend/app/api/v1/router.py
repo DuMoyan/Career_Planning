@@ -10,6 +10,7 @@ from app.api.v1.plans import router as plans_router
 from app.api.v1.profiles import router as profiles_router
 from app.api.v1.resumes import router as resumes_router
 from app.api.v1.targets import router as targets_router
+from app.api.v1.tasks import router as tasks_router
 
 api_router = APIRouter()
 api_router.include_router(health_router)
@@ -22,3 +23,4 @@ api_router.include_router(competencies_router)
 api_router.include_router(targets_router)
 api_router.include_router(ai_runs_router)
 api_router.include_router(plans_router)
+api_router.include_router(tasks_router)
