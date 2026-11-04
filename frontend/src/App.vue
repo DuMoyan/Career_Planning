@@ -1,8 +1,9 @@
 <template>
-  <main class="app-shell">
+  <header class="app-header">
     <h1>AI智能体大学生职业生涯规划系统</h1>
     <p>从自我探索到行动复盘，建立可解释、可调整的成长计划。</p>
-  </main>
+  </header>
+  <RouterView />
 </template>
 
 <style scoped>
@@ -17,23 +18,24 @@
   font-family: Inter, "Microsoft YaHei", sans-serif;
 }
 
-.app-shell {
-  min-height: 100vh;
-  display: grid;
-  place-content: center;
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 1rem;
-  padding: 2rem;
-  text-align: center;
+  padding: 1rem 2rem;
+  color: white;
+  background: #172554;
 }
 
 h1 {
   margin: 0;
-  color: #1e3a8a;
+  color: white;
 }
 
 p {
   margin: 0;
-  color: #475569;
+  color: #bfdbfe;
 }
 </style>
 
