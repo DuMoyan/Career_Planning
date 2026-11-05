@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
@@ -15,10 +16,12 @@ class GrantService:
         repository: GrantRepository,
         cache: GrantCache,
         audits: AuditRepository,
+        now_provider: Callable[[], datetime] | None = None,
     ) -> None:
         self.repository = repository
         self.cache = cache
         self.audits = audits
+        self.now_provider = now_provider or (lambda: datetime.now(UTC))
 
     async def create(
         self,
@@ -28,7 +31,7 @@ class GrantService:
         scopes: frozenset[GrantScope],
         expires_at: datetime | None,
     ) -> MentorGrant:
-        now = datetime.now(UTC)
+        now = self.now_provider()
         grant = MentorGrant(
             id=uuid4(),
             student_id=student_id,
@@ -53,7 +56,7 @@ class GrantService:
         grant = await self.repository.get(grant_id)
         if grant is None or grant.student_id != student_id:
             raise ForbiddenError("无权撤回该授权")
-        revoked = replace(grant, revoked_at=datetime.now(UTC))
+        revoked = replace(grant, revoked_at=self.now_provider())
         await self.repository.save(revoked)
         await self.cache.invalidate(grant.mentor_id, grant.student_id)
         await self.audits.append(
@@ -67,10 +70,12 @@ class GrantService:
         )
 
     async def can_read(self, mentor_id: UUID, student_id: UUID, scope: GrantScope) -> bool:
+        now = self.now_provider()
         cached = await self.cache.get(mentor_id, student_id, scope)
-        if cached is not None:
-            return cached
+        if cached is not None and cached.expires_at > now:
+            return cached.allowed
         grant = await self.repository.find_active(mentor_id, student_id)
-        allowed = GrantPolicy.can_read(grant, scope, datetime.now(UTC))
-        await self.cache.set(mentor_id, student_id, scope, allowed)
+        allowed = GrantPolicy.can_read(grant, scope, now)
+        expires_at = grant.expires_at if grant is not None else now + timedelta(minutes=5)
+        await self.cache.set(mentor_id, student_id, scope, allowed, expires_at)
         return allowed

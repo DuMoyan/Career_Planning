@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from uuid import UUID, uuid4
+from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 from app.core.errors import ConflictError, ForbiddenError
 from app.domain.plans import PlanStatus, activate_version, ensure_editable
@@ -20,8 +20,13 @@ class PlanService:
         *,
         career_plan_id: UUID | None = None,
         parent_version_id: UUID | None = None,
+        goal_reference: str | None = None,
     ) -> PlanVersionRecord:
-        career_plan_id = career_plan_id or uuid4()
+        career_plan_id = career_plan_id or (
+            uuid5(NAMESPACE_URL, f"career-plan/{student_id}/{goal_reference}")
+            if goal_reference
+            else uuid4()
+        )
         record = PlanVersionRecord(
             id=uuid4(),
             career_plan_id=career_plan_id,

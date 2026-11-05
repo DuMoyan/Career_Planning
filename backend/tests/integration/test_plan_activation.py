@@ -2,10 +2,12 @@ import asyncio
 from datetime import date
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.agents.planning_graph import PlanningGraph
 from app.core.config import Settings
+from app.core.errors import ConflictError
 from app.core.security import hash_password
 from app.domain.access import Role
 from app.domain.plans import PlanStatus
@@ -113,6 +115,24 @@ async def test_completed_tasks_remain_history_and_replace_cancel_choices_are_app
     )
     assert (await tasks.list_for_version(original.id))[0].status is TaskStatus.completed
     assert [item.version for item in await subject.history(student_id)] == [2, 1]
+
+
+async def test_same_goal_cannot_have_two_independently_active_plans() -> None:
+    subject, _plans, _tasks = service()
+    student_id = uuid4()
+    goal_reference = str(uuid4())
+    first = await subject.create_draft(
+        student_id, uuid4(), plan("第一版"), goal_reference=goal_reference
+    )
+    second = await subject.create_draft(
+        student_id, uuid4(), plan("第二版"), goal_reference=goal_reference
+    )
+
+    await subject.activate(student_id, first.id, "activate-first")
+
+    assert first.career_plan_id == second.career_plan_id
+    with pytest.raises(ConflictError, match="已有激活版本"):
+        await subject.activate(student_id, second.id, "activate-second")
 
 
 def test_plan_draft_activation_and_history_api() -> None:

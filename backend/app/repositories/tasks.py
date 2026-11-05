@@ -63,3 +63,6 @@ class InMemoryTaskRepository:
 
     async def list_checkins(self, task_id: UUID) -> list[TaskCheckInRecord]:
         return [item for item in self.checkins.values() if item.task_id == task_id]
+
+    async def list_student_checkins(self, student_id: UUID) -> list[TaskCheckInRecord]:
+        return [item for item in self.checkins.values() if item.student_id == student_id]

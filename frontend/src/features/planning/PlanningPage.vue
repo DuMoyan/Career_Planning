@@ -33,6 +33,9 @@ async function generate() {
 }
 async function prepareActivation() {
   draftVersion.value = (await http.post('/plans/drafts', { ai_run_id: run.value.id })).data
+  draftVersion.value = (await http.patch(`/plans/versions/${draftVersion.value.id}`, {
+    snapshot: run.value.plan_snapshot,
+  })).data
   confirming.value = true
 }
 async function activate() {
@@ -44,7 +47,7 @@ onBeforeUnmount(() => events?.close())
 </script>
 
 <template><section><h2>智能规划</h2><p>系统会基于主目标、能力证据和每周可用时间生成可编辑草稿；激活前不会创建任务。</p><button data-test="generate" @click="generate">生成规划草稿</button><p v-if="error" role="alert">{{ error }}</p><p v-if="progress">{{ progress }}</p>
-  <article v-if="run?.plan_snapshot" class="plan"><strong v-if="run.generation_mode === 'rules'" class="badge">规则兜底 · {{ run.fallback_reason }}</strong><h3>里程碑</h3><div v-for="milestone in run.plan_snapshot.milestones" :key="milestone.title"><input v-model="milestone.title" /><small>验收：{{ milestone.acceptance_criteria.join('；') }}</small></div><h3>任务</h3><input v-for="task in run.plan_snapshot.tasks" :key="task.title" v-model="task.title" /><h3>来源</h3><p>{{ run.plan_snapshot.sources.join('、') }}</p><h3>待核验未知项</h3><p>{{ run.plan_snapshot.unknowns.join('、') || '无' }}</p><h3>风险</h3><p>{{ run.plan_snapshot.risks.join('、') }}</p><button data-test="prepare-activate" @click="prepareActivation">准备激活</button></article>
+  <article v-if="run?.plan_snapshot" class="plan"><strong v-if="run.generation_mode === 'rules'" class="badge">规则兜底 · {{ run.fallback_reason }}</strong><h3>里程碑</h3><div v-for="milestone in run.plan_snapshot.milestones" :key="milestone.title"><input v-model="milestone.title" data-test="milestone-title" /><small>验收：{{ milestone.acceptance_criteria.join('；') }}</small></div><h3>任务</h3><input v-for="task in run.plan_snapshot.tasks" :key="task.title" v-model="task.title" /><h3>来源</h3><p>{{ run.plan_snapshot.sources.join('、') }}</p><h3>待核验未知项</h3><p>{{ run.plan_snapshot.unknowns.join('、') || '无' }}</p><h3>风险</h3><p>{{ run.plan_snapshot.risks.join('、') }}</p><button data-test="prepare-activate" @click="prepareActivation">准备激活</button></article>
   <div v-if="confirming" role="dialog"><p>激活后才会创建成长任务，确认激活此版本？</p><button data-test="confirm-activate" @click="activate">确认激活</button></div><p v-if="activated">计划已激活</p>
 </section></template>
 <style scoped>.plan { display: grid; gap: .75rem; margin-top: 1rem; padding: 1.5rem; background: white; }.badge { width: fit-content; padding: .3rem .6rem; color: #92400e; background: #fef3c7; border-radius: 999px; } small { display: block; }</style>

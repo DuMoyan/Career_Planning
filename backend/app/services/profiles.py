@@ -11,8 +11,8 @@ class ProfileService:
         self.repository = repository
 
     async def get(self, context: AccessContext, student_id: UUID) -> StudentProfileRecord:
-        if context.role is Role.student and context.user_id != student_id:
-            raise ForbiddenError("只能访问本人的学生档案")
+        if context.role is not Role.student or context.user_id != student_id:
+            raise ForbiddenError("完整学生档案仅限本人访问")
         profile = await self.repository.get(student_id)
         return profile or StudentProfileRecord(student_id=student_id)
 

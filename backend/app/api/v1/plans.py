@@ -48,7 +48,12 @@ async def create_draft(
     snapshot = await _validated_ai_plan(request, context.user_id, payload.ai_run_id)
     return _json(
         await request.app.state.plan_service.create_draft(
-            context.user_id, payload.ai_run_id, snapshot
+            context.user_id,
+            payload.ai_run_id,
+            snapshot,
+            goal_reference=(
+                await request.app.state.ai_run_service.get(context.user_id, payload.ai_run_id)
+            ).input_references.get("goal_id"),
         )
     )
 

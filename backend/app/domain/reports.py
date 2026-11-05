@@ -46,11 +46,10 @@ def aggregate_week(
         zone = timezone(timedelta(hours=8), name="Asia/Shanghai")
     start = datetime.combine(week_start, time.min, tzinfo=zone)
     end = start + timedelta(days=7)
-    task_ids = {task.id for task in tasks}
     actual = sum(
         item.actual_hours
         for item in checkins
-        if item.task_id in task_ids and start <= item.occurred_at.astimezone(zone) < end
+        if start <= item.occurred_at.astimezone(zone) < end
     )
     completed = sum(task.status is TaskStatus.completed for task in tasks)
     delayed = sum(task.status is TaskStatus.delayed for task in tasks)

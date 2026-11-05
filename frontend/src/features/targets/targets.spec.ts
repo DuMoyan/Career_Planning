@@ -32,4 +32,28 @@ describe('职业目标探索与比较', () => {
     expect(wrapper.get('[data-test="ability-section"]').text()).toContain('证据不足，待核验')
     expect(wrapper.text()).toContain('教学演示岗位数据')
   })
+
+  it('可从比较结果建立带截止日期和每周投入的主目标', async () => {
+    vi.spyOn(http, 'get').mockResolvedValue({ data: targets })
+    const post = vi.spyOn(http, 'post')
+      .mockResolvedValueOnce({ data: { targets } })
+      .mockResolvedValueOnce({ data: { id: 'goal-1', primary: true } })
+    const wrapper = mount(TargetExplorerPage)
+    await flushPromises()
+    await wrapper.get('[data-test="select-t1"]').setValue(true)
+    await wrapper.get('[data-test="select-t2"]').setValue(true)
+    await wrapper.get('[data-test="compare"]').trigger('click')
+    await flushPromises()
+
+    await wrapper.get('[data-test="goal-target"]').setValue('t1')
+    await wrapper.get('[data-test="goal-deadline"]').setValue('2027-06-30')
+    await wrapper.get('[data-test="goal-hours"]').setValue('8')
+    await wrapper.get('.goal-form').trigger('submit')
+    await flushPromises()
+
+    expect(post).toHaveBeenLastCalledWith('/goals', {
+      target_id: 't1', deadline: '2027-06-30', weekly_hours: 8, constraints: null, primary: true,
+    })
+    expect(wrapper.text()).toContain('主目标已保存')
+  })
 })

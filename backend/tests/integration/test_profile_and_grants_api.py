@@ -1,5 +1,5 @@
 import asyncio
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
@@ -85,6 +85,21 @@ def test_student_can_update_and_read_own_profile_but_not_another_student() -> No
     assert other.status_code == 403
 
 
+def test_mentor_cannot_read_full_student_profile_without_using_scoped_summary() -> None:
+    client, student_id, _mentor_id, _grants, _audits = build_app()
+    mentor_token = client.post(
+        "/api/v1/auth/login",
+        json={"identifier": "M0001", "password": "Mentor!2026"},
+    ).json()["access_token"]
+
+    response = client.get(
+        f"/api/v1/profiles/{student_id}",
+        headers={"Authorization": f"Bearer {mentor_token}"},
+    )
+
+    assert response.status_code == 403
+
+
 def test_grant_defaults_to_90_days_writes_audit_and_revoke_invalidates_cache() -> None:
     client, student_id, mentor_id, grants, audits = build_app()
 
@@ -128,3 +143,33 @@ def test_grant_accepts_explicit_expiry_and_never_returns_raw_assessment_scope() 
     assert response.status_code == 201
     assert response.json()["scopes"] == ["plan_progress"]
     assert "assessment_answers" not in response.text
+
+
+def test_cached_grant_is_rejected_immediately_after_expiry() -> None:
+    now = datetime(2026, 11, 5, tzinfo=UTC)
+
+    def clock() -> datetime:
+        return now
+
+    repository = InMemoryGrantRepository()
+    service = GrantService(
+        repository=repository,
+        cache=InMemoryGrantCache(),
+        audits=InMemoryAuditRepository(),
+        now_provider=clock,
+    )
+    student_id, mentor_id = uuid4(), uuid4()
+    grant = asyncio.run(
+        service.create(
+            student_id=student_id,
+            mentor_id=mentor_id,
+            scopes=frozenset({GrantScope.profile_summary}),
+            expires_at=now + timedelta(seconds=1),
+        )
+    )
+    assert grant.expires_at == now + timedelta(seconds=1)
+    assert asyncio.run(service.can_read(mentor_id, student_id, GrantScope.profile_summary)) is True
+
+    now += timedelta(seconds=2)
+
+    assert asyncio.run(service.can_read(mentor_id, student_id, GrantScope.profile_summary)) is False

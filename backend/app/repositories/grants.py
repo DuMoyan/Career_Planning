@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -15,10 +17,23 @@ class GrantRepository(Protocol):
     async def find_active(self, mentor_id: UUID, student_id: UUID) -> MentorGrant | None: ...
 
 
+@dataclass(frozen=True, slots=True)
+class CachedGrantDecision:
+    allowed: bool
+    expires_at: datetime
+
+
 class GrantCache(Protocol):
-    async def get(self, mentor_id: UUID, student_id: UUID, scope: GrantScope) -> bool | None: ...
+    async def get(
+        self, mentor_id: UUID, student_id: UUID, scope: GrantScope
+    ) -> CachedGrantDecision | None: ...
     async def set(
-        self, mentor_id: UUID, student_id: UUID, scope: GrantScope, allowed: bool
+        self,
+        mentor_id: UUID,
+        student_id: UUID,
+        scope: GrantScope,
+        allowed: bool,
+        expires_at: datetime,
     ) -> None: ...
     async def invalidate(self, mentor_id: UUID, student_id: UUID) -> None: ...
 
@@ -46,15 +61,22 @@ class InMemoryGrantRepository:
 
 class InMemoryGrantCache:
     def __init__(self) -> None:
-        self.values: dict[tuple[UUID, UUID, GrantScope], bool] = {}
+        self.values: dict[tuple[UUID, UUID, GrantScope], CachedGrantDecision] = {}
 
-    async def get(self, mentor_id: UUID, student_id: UUID, scope: GrantScope) -> bool | None:
+    async def get(
+        self, mentor_id: UUID, student_id: UUID, scope: GrantScope
+    ) -> CachedGrantDecision | None:
         return self.values.get((mentor_id, student_id, scope))
 
     async def set(
-        self, mentor_id: UUID, student_id: UUID, scope: GrantScope, allowed: bool
+        self,
+        mentor_id: UUID,
+        student_id: UUID,
+        scope: GrantScope,
+        allowed: bool,
+        expires_at: datetime,
     ) -> None:
-        self.values[(mentor_id, student_id, scope)] = allowed
+        self.values[(mentor_id, student_id, scope)] = CachedGrantDecision(allowed, expires_at)
 
     async def invalidate(self, mentor_id: UUID, student_id: UUID) -> None:
         keys = [key for key in self.values if key[:2] == (mentor_id, student_id)]
@@ -101,17 +123,32 @@ class RedisGrantCache:
     def _key(self, mentor_id: UUID, student_id: UUID, scope: GrantScope) -> str:
         return f"grant:{mentor_id}:{student_id}:{scope.value}"
 
-    async def get(self, mentor_id: UUID, student_id: UUID, scope: GrantScope) -> bool | None:
+    async def get(
+        self, mentor_id: UUID, student_id: UUID, scope: GrantScope
+    ) -> CachedGrantDecision | None:
         value = await self.redis.get(self._key(mentor_id, student_id, scope))
-        return None if value is None else value == "1"
+        if value is None:
+            return None
+        raw = value.decode() if isinstance(value, bytes) else value
+        allowed, expires_at = raw.split("|", maxsplit=1)
+        return CachedGrantDecision(allowed == "1", datetime.fromisoformat(expires_at))
 
     async def set(
-        self, mentor_id: UUID, student_id: UUID, scope: GrantScope, allowed: bool
+        self,
+        mentor_id: UUID,
+        student_id: UUID,
+        scope: GrantScope,
+        allowed: bool,
+        expires_at: datetime,
     ) -> None:
+        ttl = min(
+            self.ttl_seconds,
+            max(1, int((expires_at - datetime.now(UTC)).total_seconds())),
+        )
         await self.redis.set(
             self._key(mentor_id, student_id, scope),
-            "1" if allowed else "0",
-            ex=self.ttl_seconds,
+            f"{'1' if allowed else '0'}|{expires_at.isoformat()}",
+            ex=ttl,
         )
 
     async def invalidate(self, mentor_id: UUID, student_id: UUID) -> None:

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
 import pytest
@@ -76,9 +76,9 @@ async def test_generation_is_idempotent_and_advice_falls_back() -> None:
 async def test_accept_starts_replan_without_changing_active_plan_and_feedback_is_saved() -> None:
     created_runs = []
 
-    async def start_replan(student_id):
+    async def start_replan(student_id, feedback=None):
         run_id = uuid4()
-        created_runs.append((student_id, run_id))
+        created_runs.append((student_id, feedback, run_id))
         return run_id
 
     service, _, plans, student_id = await build_service(replan=start_replan)
@@ -88,11 +88,13 @@ async def test_accept_starts_replan_without_changing_active_plan_and_feedback_is
     accepted = await service.respond(student_id, report.id, "accept", None)
 
     assert accepted.response_action == "accept"
-    assert accepted.replan_run_id == created_runs[0][1]
+    assert accepted.replan_run_id == created_runs[0][2]
     assert next(iter(plans.versions.values())).status is active_before is PlanStatus.active
 
     modified = await service.respond(student_id, report.id, "modify", "保留课程任务，减少练习量")
     assert modified.response_text == "保留课程任务，减少练习量"
+    assert modified.replan_run_id == created_runs[1][2]
+    assert created_runs[1][1] == "保留课程任务，减少练习量"
     rejected = await service.respond(student_id, report.id, "reject", "本周是考试周")
     assert rejected.response_text == "本周是考试周"
 
@@ -103,3 +105,50 @@ async def test_report_ownership_is_enforced() -> None:
 
     with pytest.raises(ForbiddenError):
         await service.respond(uuid4(), report.id, "reject", None)
+
+
+async def test_archived_cross_week_task_checkin_is_counted_by_occurrence_time() -> None:
+    student_id = uuid4()
+    plans = InMemoryPlanRepository()
+    tasks = InMemoryTaskRepository()
+    version = PlanVersionRecord(
+        id=uuid4(),
+        career_plan_id=uuid4(),
+        student_id=student_id,
+        ai_run_id=uuid4(),
+        version=1,
+        status=PlanStatus.archived,
+        snapshot=PlanDraft(
+            milestones=[], tasks=[], sources=[], unknowns=[], risks=[], generation_mode="rules"
+        ),
+    )
+    task = GrowthTaskRecord(
+        id=uuid4(),
+        student_id=student_id,
+        plan_version_id=version.id,
+        title="跨周练习",
+        competency_code="programming",
+        due_date=date(2026, 11, 8),
+        weekly_hours=2,
+        source_refs=["岗位样本"],
+        status=TaskStatus.completed,
+    )
+    await plans.save(version)
+    await tasks.save(task)
+    await tasks.save_checkin(
+        TaskCheckInRecord(
+            id=uuid4(),
+            student_id=student_id,
+            task_id=task.id,
+            content="周一凌晨完成",
+            actual_hours=2,
+            proof_url=None,
+            created_at=datetime(2026, 11, 8, 16, 30, tzinfo=UTC),
+        ),
+        "cross-week",
+    )
+    service = ReportService(InMemoryReportRepository(), tasks, plans)
+
+    report = await service.generate(student_id, date(2026, 11, 9))
+
+    assert report.metrics.actual_hours == 2

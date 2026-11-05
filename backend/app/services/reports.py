@@ -3,7 +3,6 @@ from datetime import date, timedelta
 from uuid import UUID, uuid4
 
 from app.core.errors import ConflictError, ForbiddenError
-from app.domain.plans import PlanStatus
 from app.domain.reports import ReportCheckIn, ReportTask, aggregate_week
 from app.repositories.reports import WeeklyReportRecord
 
@@ -33,18 +32,15 @@ class ReportService:
         week_end = week_start + timedelta(days=7)
         task_records = []
         for task in await self.tasks.list_student(student_id):
-            plan = await self.plans.get(task.plan_version_id)
-            if plan and plan.status is PlanStatus.active and week_start <= task.due_date < week_end:
+            if week_start <= task.due_date < week_end:
                 task_records.append(task)
         report_tasks = [
             ReportTask(item.id, item.status, item.weekly_hours) for item in task_records
         ]
-        report_checkins = []
-        for task in task_records:
-            report_checkins.extend(
-                ReportCheckIn(item.task_id, item.actual_hours, item.created_at)
-                for item in await self.tasks.list_checkins(task.id)
-            )
+        report_checkins = [
+            ReportCheckIn(item.task_id, item.actual_hours, item.created_at)
+            for item in await self.tasks.list_student_checkins(student_id)
+        ]
         metrics = aggregate_week(report_tasks, report_checkins, week_start, self.timezone)
         advice_mode = "rules"
         advice = self._rule_advice(metrics)
@@ -78,8 +74,8 @@ class ReportService:
             raise ConflictError("修改建议时必须填写调整内容")
         report.response_action = action
         report.response_text = text.strip() if text else None
-        if action == "accept" and self.replan_callback:
-            result = self.replan_callback(student_id)
+        if action in {"accept", "modify"} and self.replan_callback:
+            result = self.replan_callback(student_id, report.response_text)
             report.replan_run_id = await result if inspect.isawaitable(result) else result
         await self.reports.save(report)
         return report
