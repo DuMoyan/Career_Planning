@@ -11,6 +11,7 @@ const draftVersion = ref<any>(null)
 const confirming = ref(false)
 const activated = ref(false)
 let events: EventSource | null = null
+let pollTimer: ReturnType<typeof setTimeout> | null = null
 
 async function loadGoals() { goals.value = (await http.get('/goals')).data }
 async function poll(runId: string) {
@@ -18,11 +19,20 @@ async function poll(runId: string) {
   run.value = response.data
   progress.value = response.data.status
 }
+async function pollUntilTerminal(runId: string) {
+  await poll(runId)
+  if (run.value.status === 'running' || run.value.status === 'queued') {
+    pollTimer = setTimeout(() => void pollUntilTerminal(runId), 500)
+  } else if (run.value.status === 'failed') {
+    error.value = `规划生成失败：${run.value.error_code || '未知错误'}`
+  }
+}
 function watchEvents(runId: string) {
-  if (typeof EventSource === 'undefined') return poll(runId)
+  if (typeof EventSource === 'undefined') return pollUntilTerminal(runId)
   events = new EventSource(`/api/v1/plans/generations/${runId}/events`)
   events.addEventListener('completed', async () => { events?.close(); await poll(runId) })
-  events.onerror = async () => { events?.close(); await poll(runId) }
+  events.addEventListener('failed', async () => { events?.close(); await poll(runId) })
+  events.onerror = async () => { events?.close(); await pollUntilTerminal(runId) }
 }
 async function generate() {
   const primary = goals.value.find((item) => item.primary)
@@ -43,7 +53,7 @@ async function activate() {
   confirming.value = false; activated.value = true
 }
 onMounted(loadGoals)
-onBeforeUnmount(() => events?.close())
+onBeforeUnmount(() => { events?.close(); if (pollTimer) clearTimeout(pollTimer) })
 </script>
 
 <template><section><h2>智能规划</h2><p>系统会基于主目标、能力证据和每周可用时间生成可编辑草稿；激活前不会创建任务。</p><button data-test="generate" @click="generate">生成规划草稿</button><p v-if="error" role="alert">{{ error }}</p><p v-if="progress">{{ progress }}</p>

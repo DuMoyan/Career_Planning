@@ -66,4 +66,21 @@ describe('规划生成与激活', () => {
       }),
     })
   })
+
+  it('后台生成时持续轮询直至完成', async () => {
+    const get = vi.spyOn(http, 'get')
+      .mockResolvedValueOnce({ data: [{ id: 'goal-1', primary: true, deadline: '2027-06-30' }] })
+      .mockResolvedValueOnce({ data: { id: 'run-1', status: 'completed', plan_snapshot: {
+        milestones: [], tasks: [], sources: ['岗位要求'], unknowns: [], risks: [], generation_mode: 'rules',
+      } } })
+    vi.spyOn(http, 'post').mockResolvedValue({ data: { id: 'run-1', status: 'running' } })
+    const wrapper = mount(PlanningPage)
+    await flushPromises()
+
+    await wrapper.get('[data-test="generate"]').trigger('click')
+    await flushPromises()
+
+    expect(get).toHaveBeenLastCalledWith('/plans/generations/run-1')
+    expect(wrapper.text()).toContain('岗位要求')
+  })
 })

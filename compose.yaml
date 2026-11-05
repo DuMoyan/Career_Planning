@@ -10,9 +10,14 @@ services:
   backend:
     build: ./backend
     environment:
+      APP_ENV: production
       DATABASE_URL: postgresql+asyncpg://career:career@postgres/career
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET:-change-this-demo-secret-at-least-32-chars}
+      UPLOAD_DIR: /app/uploads
+      MODEL_BASE_URL: ${MODEL_BASE_URL:-}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+      MODEL_NAME: ${MODEL_NAME:-}
     volumes: [uploads:/app/uploads]
     depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy } }
     healthcheck:

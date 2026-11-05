@@ -17,6 +17,7 @@ cd ..\frontend; pnpm test --run; pnpm build
 
 ## 已知限制
 
-- 四服务已在 Docker Desktop 4.98.0 / Engine 29.9.2 / Compose 5.6.1 完成实际构建、健康检查和 8 步 HTTP 冒烟。
-- 运行时演示数据使用单进程内存仓储；数据库表和迁移已齐备，生产化仍需将剩余业务仓储全部切换为 SQLAlchemy 实现。
-- 招聘平台实时数据、学校统一认证、生产模型供应商/异步队列、原生移动端和高级运营分析不在本 MVP 范围。
+- 四服务已在 Docker Desktop 4.98.0 / Engine 29.9.2 / Compose 5.6.1 完成实际构建、健康检查和真实 HTTP 冒烟。
+- `APP_ENV=production` 使用 PostgreSQL 持久化业务数据、Redis 缓存授权判定，并将简历原文件保存到命名卷；开发和测试环境仍可使用内存装配。
+- 已提供 OpenAI 兼容模型适配器；未配置模型时自动使用可解释的规则规划。MVP 后台任务运行于 FastAPI 进程内，不包含分布式任务队列。
+- 招聘平台实时数据、学校统一认证、原生移动端和高级运营分析不在本 MVP 范围。

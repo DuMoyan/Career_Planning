@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date
 from uuid import UUID, uuid4
 
@@ -142,6 +143,31 @@ def test_only_one_running_job_per_student_returns_conflict() -> None:
 
     assert first.status_code == 202
     assert second.status_code == 409
+
+
+def test_deferred_run_can_be_processed_and_unexpected_failure_reaches_terminal_state() -> None:
+    client, repository = build_client(None, auto_process=False)
+    created = client.post("/api/v1/plans/generations").json()
+    run_id = UUID(created["id"])
+    student_id = repository.runs[run_id].student_id
+
+    completed = asyncio.run(client.app.state.ai_run_service.process(run_id, student_id))
+
+    assert created["status"] == "running"
+    assert completed.status == "completed"
+    assert completed.generation_mode == "rules"
+
+    class BrokenGraph:
+        async def run(self, _context):
+            raise RuntimeError("unexpected")
+
+    service = client.app.state.ai_run_service
+    service.graph = BrokenGraph()
+    failed_run = asyncio.run(service.create(student_id))
+    failed = asyncio.run(service.process(failed_run.id, student_id))
+
+    assert failed.status == "failed"
+    assert failed.error_code == "RuntimeError"
 
 
 def test_retry_creates_new_immutable_snapshot() -> None:

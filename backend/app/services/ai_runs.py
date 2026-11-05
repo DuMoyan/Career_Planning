@@ -16,17 +16,25 @@ class AIRunService:
         self.audits = audits
         self.auto_process = auto_process
 
-    async def create(self, student_id: UUID, parent_run_id: UUID | None = None) -> AIRunRecord:
+    async def create(
+        self,
+        student_id: UUID,
+        parent_run_id: UUID | None = None,
+        feedback: str | None = None,
+    ) -> AIRunRecord:
         if await self.repository.find_running(student_id):
             raise ConflictError("已有规划生成任务正在运行")
         context = self.context_provider(student_id)
         if inspect.isawaitable(context):
             context = await context
+        input_references = dict(context.input_references)
+        if feedback:
+            input_references["weekly_feedback"] = feedback
         run = AIRunRecord(
             id=uuid4(),
             student_id=student_id,
             status="running",
-            input_references=dict(context.input_references),
+            input_references=input_references,
             parent_run_id=parent_run_id,
             events=[("started", {"status": "running"})],
         )
@@ -42,6 +50,27 @@ class AIRunService:
             )
         )
         if self.auto_process:
+            await self.process(run.id, student_id)
+        return await self.get(student_id, run.id)
+
+    async def process(self, run_id: UUID, student_id: UUID) -> AIRunRecord:
+        run = await self.get(student_id, run_id)
+        if run.status != "running":
+            return run
+        try:
+            context = self.context_provider(student_id)
+            if inspect.isawaitable(context):
+                context = await context
+            preferences = dict(context.preferences)
+            feedback = run.input_references.get("weekly_feedback")
+            if feedback:
+                preferences["weekly_feedback"] = [feedback]
+            context = context.model_copy(
+                update={
+                    "input_references": dict(run.input_references),
+                    "preferences": preferences,
+                }
+            )
             result = await self.graph.run(context)
             run.status = "completed"
             run.plan_snapshot = result.plan.model_dump(mode="json")
@@ -62,7 +91,11 @@ class AIRunService:
                     },
                 )
             )
-            await self.repository.save(run)
+        except Exception as error:  # 后台任务必须写入终态，避免运行记录永久卡住
+            run.status = "failed"
+            run.error_code = type(error).__name__
+            run.events.append(("failed", {"status": "failed", "error_code": run.error_code}))
+        await self.repository.save(run)
         return run
 
     async def get(self, student_id: UUID, run_id: UUID) -> AIRunRecord:
@@ -75,7 +108,11 @@ class AIRunService:
         original = await self.get(student_id, run_id)
         if original.status in {"queued", "running"}:
             raise ConflictError("当前规划生成任务尚未结束")
-        return await self.create(student_id, parent_run_id=original.id)
+        return await self.create(
+            student_id,
+            parent_run_id=original.id,
+            feedback=original.input_references.get("weekly_feedback"),
+        )
 
     async def events(self, student_id: UUID, run_id: UUID):
         return (await self.get(student_id, run_id)).events

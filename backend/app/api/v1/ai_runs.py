@@ -18,7 +18,11 @@ async def create_generation(
     context: Annotated[AccessContext, Depends(current_access_context)],
 ) -> dict:
     ensure_roles(context, {Role.student})
-    return serialize_run(await request.app.state.ai_run_service.create(context.user_id))
+    run = await request.app.state.ai_run_service.create(context.user_id)
+    scheduler = getattr(request.app.state, "schedule_ai_run", None)
+    if scheduler is not None and run.status == "running":
+        scheduler(run.id, context.user_id)
+    return serialize_run(run)
 
 
 @router.get("/{run_id}")
@@ -37,7 +41,11 @@ async def retry_generation(
     context: Annotated[AccessContext, Depends(current_access_context)],
 ) -> dict:
     ensure_roles(context, {Role.student})
-    return serialize_run(await request.app.state.ai_run_service.retry(context.user_id, run_id))
+    run = await request.app.state.ai_run_service.retry(context.user_id, run_id)
+    scheduler = getattr(request.app.state, "schedule_ai_run", None)
+    if scheduler is not None and run.status == "running":
+        scheduler(run.id, context.user_id)
+    return serialize_run(run)
 
 
 @router.get("/{run_id}/events")

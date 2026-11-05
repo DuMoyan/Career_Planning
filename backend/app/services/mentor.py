@@ -18,10 +18,14 @@ class MentorCommentRecord:
 
 
 class MentorService:
-    def __init__(self, grants, plans) -> None:
+    def __init__(self, grants, plans, comments=None) -> None:
         self.grants = grants
         self.plans = plans
-        self.comments: dict[UUID, MentorCommentRecord] = {}
+        if comments is None:
+            from app.repositories.mentor_comments import InMemoryMentorCommentRepository
+
+            comments = InMemoryMentorCommentRepository()
+        self.comments = comments
 
     async def list_students(self, mentor_id: UUID) -> list[dict]:
         now = datetime.now(UTC)
@@ -31,7 +35,7 @@ class MentorService:
                 "scopes": sorted(scope.value for scope in grant.scopes),
                 "expires_at": grant.expires_at,
             }
-            for grant in self.grants.records.values()
+            for grant in await self.grants.list_mentor(mentor_id)
             if grant.mentor_id == mentor_id and grant.revoked_at is None and grant.expires_at > now
         ]
 
@@ -61,7 +65,7 @@ class MentorService:
         comment = MentorCommentRecord(
             uuid4(), mentor_id, version.student_id, version.id, content.strip()
         )
-        self.comments[comment.id] = comment
+        await self.comments.save(comment)
         return comment
 
     async def list_comments(self, actor_id: UUID, role: Role, version_id: UUID):
@@ -75,7 +79,7 @@ class MentorService:
             await self._require(actor_id, version.student_id, GrantScope.plan_progress)
         else:
             raise ForbiddenError("当前账号无权查看学生评论")
-        return [item for item in self.comments.values() if item.plan_version_id == version_id]
+        return await self.comments.list_version(version_id)
 
     async def _require(self, mentor_id: UUID, student_id: UUID, scope: GrantScope) -> None:
         grant = await self.grants.find_active(mentor_id, student_id)

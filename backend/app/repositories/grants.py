@@ -15,6 +15,7 @@ class GrantRepository(Protocol):
     async def save(self, grant: MentorGrant) -> None: ...
     async def get(self, grant_id: UUID) -> MentorGrant | None: ...
     async def find_active(self, mentor_id: UUID, student_id: UUID) -> MentorGrant | None: ...
+    async def list_mentor(self, mentor_id: UUID) -> list[MentorGrant]: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,6 +58,9 @@ class InMemoryGrantRepository:
             ),
             None,
         )
+
+    async def list_mentor(self, mentor_id: UUID) -> list[MentorGrant]:
+        return [grant for grant in self.records.values() if grant.mentor_id == mentor_id]
 
 
 class InMemoryGrantCache:
@@ -114,6 +118,16 @@ class SqlAlchemyGrantRepository:
         )
         return _grant_from_model(model)
 
+    async def list_mentor(self, mentor_id: UUID) -> list[MentorGrant]:
+        models = list(
+            (
+                await self.session.scalars(
+                    select(MentorGrantModel).where(MentorGrantModel.mentor_id == mentor_id)
+                )
+            ).all()
+        )
+        return [grant for model in models if (grant := _grant_from_model(model)) is not None]
+
 
 class RedisGrantCache:
     def __init__(self, redis: Redis, ttl_seconds: int = 300) -> None:
@@ -159,11 +173,17 @@ class RedisGrantCache:
 def _grant_from_model(model: MentorGrantModel | None) -> MentorGrant | None:
     if model is None:
         return None
+    expires_at = model.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=UTC)
+    revoked_at = model.revoked_at
+    if revoked_at is not None and revoked_at.tzinfo is None:
+        revoked_at = revoked_at.replace(tzinfo=UTC)
     return MentorGrant(
         id=model.id,
         student_id=model.student_id,
         mentor_id=model.mentor_id,
         scopes=frozenset(GrantScope(scope) for scope in model.scopes),
-        expires_at=model.expires_at,
-        revoked_at=model.revoked_at,
+        expires_at=expires_at,
+        revoked_at=revoked_at,
     )

@@ -25,6 +25,23 @@ class MemoryFileStore:
         self.files.pop(key, None)
 
 
+class DiskFileStore:
+    def __init__(self, root: str | Path) -> None:
+        self.root = Path(root).resolve()
+        self.root.mkdir(parents=True, exist_ok=True)
+
+    async def save(self, content: bytes) -> str:
+        key = str(uuid4())
+        (self.root / key).write_bytes(content)
+        return key
+
+    async def delete(self, key: str) -> None:
+        path = (self.root / key).resolve()
+        if path.parent != self.root:
+            raise DomainError("文件标识无效")
+        path.unlink(missing_ok=True)
+
+
 class ResumeParser:
     KEYWORDS = {
         "programming": ("python", "java", "开发", "编程"),

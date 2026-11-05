@@ -15,6 +15,7 @@ class CareerGoal(Base):
             "student_id",
             unique=True,
             postgresql_where=text('"primary" = true'),
+            sqlite_where=text('"primary" = 1'),
         ),
     )
 

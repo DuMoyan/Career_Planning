@@ -37,6 +37,7 @@ class PlanVersion(Base):
             "career_plan_id",
             unique=True,
             postgresql_where=text("status = 'active'"),
+            sqlite_where=text("status = 'active'"),
         ),
     )
 
@@ -53,3 +54,20 @@ class PlanVersion(Base):
     snapshot: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     activated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class PlanActivationRequest(Base):
+    __tablename__ = "plan_activation_requests"
+    __table_args__ = (
+        UniqueConstraint("student_id", "idempotency_key", name="uq_plan_activation_student_key"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    student_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(128))
+    version_id: Mapped[UUID] = mapped_column(
+        Uuid, ForeignKey("plan_versions.id", ondelete="CASCADE")
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

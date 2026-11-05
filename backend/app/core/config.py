@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     jwt_secret: str = Field(min_length=32)
     jwt_access_minutes: int = Field(default=30, gt=0)
     upload_max_bytes: int = Field(default=10_485_760, gt=0)
+    upload_dir: str = "uploads"
     model_base_url: str | None = None
     model_api_key: str | None = None
     model_name: str | None = None

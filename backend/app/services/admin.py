@@ -3,6 +3,7 @@ class AdminService:
         self.audits = audits
 
     async def overview(self) -> dict:
+        events = await self.audits.list_recent()
         return {
             "targets": [
                 "software-engineer",
@@ -20,6 +21,6 @@ class AdminService:
                     "result": event.result,
                     "created_at": event.created_at,
                 }
-                for event in self.audits.events
+                for event in events
             ],
         }
