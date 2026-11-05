@@ -1,34 +1,37 @@
 import asyncio
+import os
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from app.models.audit import AuditLog  # noqa: F401
+from alembic import context
+from app.core.migration_config import apply_database_url_override
+from app.models.ai_run import AIPlanningRun  # noqa: F401
 from app.models.assessment import (  # noqa: F401
     AssessmentItemModel,
     AssessmentProgressModel,
     AssessmentRecordModel,
     AssessmentScaleModel,
 )
-from app.models.ai_run import AIPlanningRun  # noqa: F401
+from app.models.audit import AuditLog  # noqa: F401
 from app.models.base import Base
-from app.models.consent import UserConsent  # noqa: F401
 from app.models.competency import CompetencyEvidence, CompetencyProfile  # noqa: F401
+from app.models.consent import UserConsent  # noqa: F401
 from app.models.goal import CareerGoal  # noqa: F401
 from app.models.mentor import MentorGrantModel  # noqa: F401
 from app.models.mentor_comment import MentorPlanComment  # noqa: F401
 from app.models.plan import CareerPlan, PlanVersion  # noqa: F401
+from app.models.preference import CareerPreference  # noqa: F401
 from app.models.profile import StudentProfile  # noqa: F401
 from app.models.report import WeeklyReport  # noqa: F401
-from app.models.preference import CareerPreference  # noqa: F401
 from app.models.resume import ResumeFile  # noqa: F401
 from app.models.target import CareerTarget, CareerTargetRequirement  # noqa: F401
 from app.models.task import GrowthTask, TaskCheckIn  # noqa: F401
 from app.models.user import RefreshToken, User  # noqa: F401
 
 config = context.config
+apply_database_url_override(config, os.environ)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
